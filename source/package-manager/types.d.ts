@@ -17,12 +17,12 @@ export type PackageManagerConfig = {
 	id: string;
 
 	/**
- 	How to install packages (when there is a lockfile), e.g. `["npm", ["install"]]`.
+ 	How to install packages when there is a lockfile, e.g. `["npm", ["install"]]`.
   	*/
 	installCommand: Command;
 
 	/**
-	How to install packages (when there is no lockfile), e.g. `["npm", ["install"]]`.
+	How to install packages when there is no lockfile, e.g. `["npm", ["install"]]`.
 	*/
 	installCommandNoLockfile: Command;
 
