@@ -6,17 +6,17 @@ export default async function getConfig(rootDirectory) {
 	const searchDirectory = isInstalledGlobally ? os.homedir() : rootDirectory;
 
 	const searchPlaces = [
-		'.np-config.json',
-		'.np-config.js',
-		'.np-config.cjs',
-		'.np-config.mjs',
+		'.pn-config.json',
+		'.pn-config.js',
+		'.pn-config.cjs',
+		'.pn-config.mjs',
 	];
 
 	if (!isInstalledGlobally) {
 		searchPlaces.push('package.json');
 	}
 
-	const explorer = cosmiconfig('np', {
+	const explorer = cosmiconfig('pn', {
 		searchPlaces,
 		stopDir: searchDirectory,
 	});

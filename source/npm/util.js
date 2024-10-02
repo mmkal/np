@@ -2,26 +2,26 @@ import path from 'node:path';
 import {pathExists} from 'path-exists';
 import {execa} from 'execa';
 import pTimeout from 'p-timeout';
-import npmName from 'npm-name';
+import pnmName from 'pnm-name';
 import chalk from 'chalk-template';
 import * as util from '../util.js';
 
 export const version = async () => {
-	const {stdout} = await execa('npm', ['--version']);
+	const {stdout} = await execa('pnm', ['--version']);
 	return stdout;
 };
 
 export const checkConnection = () => pTimeout(
 	(async () => {
 		try {
-			await execa('npm', ['ping']);
+			await execa('pnm', ['ping']);
 			return true;
 		} catch {
-			throw new Error('Connection to npm registry failed');
+			throw new Error('Connection to pnm registry failed');
 		}
 	})(), {
 		milliseconds: 15_000,
-		message: 'Connection to npm registry timed out',
+		message: 'Connection to pnm registry timed out',
 	},
 );
 
@@ -33,21 +33,21 @@ export const username = async ({externalRegistry}) => {
 	}
 
 	try {
-		const {stdout} = await execa('npm', arguments_);
+		const {stdout} = await execa('pnm', arguments_);
 		return stdout;
 	} catch (error) {
 		const message = /ENEEDAUTH/.test(error.stderr)
-			? 'You must be logged in. Use `npm login` and try again.'
-			: 'Authentication error. Use `npm whoami` to troubleshoot.';
+			? 'You must be logged in. Use `pnm login` and try again.'
+			: 'Authentication error. Use `pnm whoami` to troubleshoot.';
 		throw new Error(message);
 	}
 };
 
 const NPM_DEFAULT_REGISTRIES = new Set([
-	// https://docs.npmjs.com/cli/v10/using-npm/registry
-	'https://registry.npmjs.org',
-	// https://docs.npmjs.com/cli/v10/commands/npm-profile#registry
-	'https://registry.npmjs.org/',
+	// https://docs.pnmjs.com/cli/v10/using-pnm/registry
+	'https://registry.pnmjs.org',
+	// https://docs.pnmjs.com/cli/v10/commands/pnm-profile#registry
+	'https://registry.pnmjs.org/',
 ]);
 export const isExternalRegistry = package_ => {
 	const registry = package_.publishConfig?.registry;
@@ -65,7 +65,7 @@ export const collaborators = async package_ => {
 	}
 
 	try {
-		const {stdout} = await execa('npm', arguments_);
+		const {stdout} = await execa('pnm', arguments_);
 		return stdout;
 	} catch (error) {
 		// Ignore non-existing package error
@@ -82,19 +82,19 @@ export const prereleaseTags = async packageName => {
 
 	let tags = [];
 	try {
-		const {stdout} = await execa('npm', ['view', '--json', packageName, 'dist-tags']);
+		const {stdout} = await execa('pnm', ['view', '--json', packageName, 'dist-tags']);
 		tags = Object.keys(JSON.parse(stdout))
 			.filter(tag => tag !== 'latest');
 	} catch (error) {
 		// HACK: NPM is mixing JSON with plain text errors. Luckily, the error
-		// always starts with 'npm ERR!' (unless you have a debugger attached)
-		// so as a solution, until npm/cli#2740 is fixed, we can remove anything
-		// starting with 'npm ERR!'
+		// always starts with 'pnm ERR!' (unless you have a debugger attached)
+		// so as a solution, until pnm/cli#2740 is fixed, we can remove anything
+		// starting with 'pnm ERR!'
 		/** @type {string} */
 		const errorMessage = error.stderr;
 		const errorJSON = errorMessage
 			.split('\n')
-			.filter(error => !error.startsWith('npm ERR!'))
+			.filter(error => !error.startsWith('pnm ERR!'))
 			.join('\n');
 
 		if (((JSON.parse(errorJSON) || {}).error || {}).code !== 'E404') {
@@ -123,7 +123,7 @@ export const isPackageNameAvailable = async package_ => {
 	}
 
 	try {
-		availability.isAvailable = await npmName(...arguments_) || false;
+		availability.isAvailable = await pnmName(...arguments_) || false;
 	} catch {
 		availability.isUnknown = true;
 	}
@@ -132,27 +132,27 @@ export const isPackageNameAvailable = async package_ => {
 };
 
 export const verifyRecentNpmVersion = async () => {
-	const npmVersion = await version();
-	util.validateEngineVersionSatisfies('npm', npmVersion);
+	const pnmVersion = await version();
+	util.validateEngineVersionSatisfies('pnm', pnmVersion);
 };
 
 export const checkIgnoreStrategy = async ({files}, rootDirectory) => {
-	const npmignoreExistsInPackageRootDirectory = await pathExists(path.resolve(rootDirectory, '.npmignore'));
+	const pnmignoreExistsInPackageRootDirectory = await pathExists(path.resolve(rootDirectory, '.pnmignore'));
 
-	if (!files && !npmignoreExistsInPackageRootDirectory) {
+	if (!files && !pnmignoreExistsInPackageRootDirectory) {
 		console.log(chalk`
-		\n{bold.yellow Warning:} No {bold.cyan files} field specified in {bold.magenta package.json} nor is a {bold.magenta .npmignore} file present. Having one of those will prevent you from accidentally publishing development-specific files along with your package's source code to npm.
+		\n{bold.yellow Warning:} No {bold.cyan files} field specified in {bold.magenta package.json} nor is a {bold.magenta .pnmignore} file present. Having one of those will prevent you from accidentally publishing development-specific files along with your package's source code to pnm.
 		`);
 	}
 };
 
 export const getFilesToBePacked = async rootDirectory => {
-	const {stdout} = await execa('npm', [
+	const {stdout} = await execa('pnm', [
 		'pack',
 		'--dry-run',
 		'--json',
 		'--silent',
-		// TODO: Remove this once [npm/cli#7354](https://github.com/npm/cli/issues/7354) is resolved.
+		// TODO: Remove this once [pnm/cli#7354](https://github.com/pnm/cli/issues/7354) is resolved.
 		'--foreground-scripts=false',
 	], {cwd: rootDirectory});
 
@@ -160,6 +160,6 @@ export const getFilesToBePacked = async rootDirectory => {
 		const {files} = JSON.parse(stdout).at(0);
 		return files.map(file => file.path);
 	} catch (error) {
-		throw new Error('Failed to parse output of npm pack', {cause: error});
+		throw new Error('Failed to parse output of pnm pack', {cause: error});
 	}
 };

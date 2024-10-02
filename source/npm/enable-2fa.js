@@ -1,12 +1,12 @@
 import {execa} from 'execa';
 import {from, catchError} from 'rxjs';
 import Version from '../version.js';
-import handleNpmError from './handle-npm-error.js';
-import {version as npmVersionCheck} from './util.js';
+import handleNpmError from './handle-pnm-error.js';
+import {version as pnmVersionCheck} from './util.js';
 
 export const getEnable2faArguments = async (packageName, options) => {
-	const npmVersion = await npmVersionCheck();
-	const arguments_ = new Version(npmVersion).satisfies('>=9.0.0')
+	const pnmVersion = await pnmVersionCheck();
+	const arguments_ = new Version(pnmVersion).satisfies('>=9.0.0')
 		? ['access', 'set', 'mfa=publish', packageName]
 		: ['access', '2fa-required', packageName];
 
@@ -17,7 +17,7 @@ export const getEnable2faArguments = async (packageName, options) => {
 	return arguments_;
 };
 
-const enable2fa = (packageName, options) => execa('npm', getEnable2faArguments(packageName, options));
+const enable2fa = (packageName, options) => execa('pnm', getEnable2faArguments(packageName, options));
 
 const tryEnable2fa = (task, packageName, options) => {
 	from(enable2fa(packageName, options)).pipe(

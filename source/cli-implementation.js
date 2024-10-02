@@ -9,16 +9,16 @@ import {getPackageManagerConfig} from './package-manager/index.js';
 import config from './config.js';
 import * as util from './util.js';
 import * as git from './git-util.js';
-import * as npm from './npm/util.js';
+import * as pnm from './pnm/util.js';
 import {SEMVER_INCREMENTS} from './version.js';
 import ui from './ui.js';
-import np from './index.js';
+import pn from './index.js';
 
 /** @typedef {typeof cli} CLI */
 
 const cli = meow(`
 	Usage
-	  $ np <version>
+	  $ pn <version>
 
 	  Version can be:
 	    ${SEMVER_INCREMENTS.join(' | ')} | 1.2.3
@@ -35,17 +35,17 @@ const cli = meow(`
 	  --contents             Subdirectory to publish
 	  --no-release-draft     Skips opening a GitHub release draft
 	  --release-draft-only   Only opens a GitHub release draft for the latest published version
-	  --test-script          Name of npm run script to run tests before publishing (default: test)
+	  --test-script          Name of pnm run script to run tests before publishing (default: test)
 	  --no-2fa               Don't enable 2FA on new packages (not recommended)
-	  --message              Version bump commit message, '%s' will be replaced with version (default: '%s' with npm and 'v%s' with yarn)
+	  --message              Version bump commit message, '%s' will be replaced with version (default: '%s' with pnm and 'v%s' with yarn)
 	  --package-manager      Use a specific package manager (default: 'packageManager' field in package.json)
 
 	Examples
-	  $ np
-	  $ np patch
-	  $ np 1.0.2
-	  $ np 1.0.2-beta.3 --tag=beta
-	  $ np 1.0.2-beta.3 --tag=beta --contents=dist
+	  $ pn
+	  $ pn patch
+	  $ pn 1.0.2
+	  $ pn 1.0.2-beta.3 --tag=beta
+	  $ pn 1.0.2-beta.3 --tag=beta --contents=dist
 `, {
 	importMeta: import.meta,
 	booleanDefault: undefined,
@@ -127,19 +127,19 @@ async function getOptions() {
 
 	const packageManager = getPackageManagerConfig(rootDirectory, package_);
 
-	if (packageManager.throwOnExternalRegistry && npm.isExternalRegistry(package_)) {
+	if (packageManager.throwOnExternalRegistry && pnm.isExternalRegistry(package_)) {
 		throw new Error(`External registry is not yet supported with ${packageManager.id}.`);
 	}
 
 	const runPublish = !flags.releaseDraftOnly && flags.publish && !package_.private;
 
-	const availability = runPublish ? await npm.isPackageNameAvailable(package_) : {
+	const availability = runPublish ? await pnm.isPackageNameAvailable(package_) : {
 		isAvailable: false,
 		isUnknown: false,
 	};
 
 	// Use current (latest) version when 'releaseDraftOnly', otherwise try to use the first argument.
-	const version = flags.releaseDraftOnly ? package_.version : cli.input.at(0);
+	const version = flags.releaseDraftOnly ? package_.version : cli.ipnut.at(0);
 
 	const branch = flags.branch ?? await git.defaultBranch();
 
@@ -167,7 +167,7 @@ try {
 	}
 
 	console.log(); // Prints a newline for readability
-	const newPackage = await np(options.version, options, {package_, rootDirectory});
+	const newPackage = await pn(options.version, options, {package_, rootDirectory});
 
 	if (options.preview || options.releaseDraftOnly) {
 		gracefulExit();

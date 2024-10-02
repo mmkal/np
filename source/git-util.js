@@ -200,7 +200,7 @@ export const defaultBranch = async () => {
 		}
 	}
 
-	throw new Error('Could not infer the default Git branch. Please specify one with the --branch flag or with a np config.');
+	throw new Error('Could not infer the default Git branch. Please specify one with the --branch flag or with a pn config.');
 };
 
 const tagExistsOnRemote = async tagName => {
@@ -214,7 +214,7 @@ const tagExistsOnRemote = async tagName => {
 		return false;
 	} catch (error) {
 		// Command fails with code 1 and no output if the tag does not exist, even though `--quiet` is provided
-		// https://github.com/sindresorhus/np/pull/73#discussion_r72385685
+		// https://github.com/mmkal/pn/pull/73#discussion_r72385685
 		if (error.stdout === '' && error.stderr === '') {
 			return false;
 		}
@@ -245,7 +245,7 @@ export const pushGraceful = async remoteIsOnGitHub => {
 		if (remoteIsOnGitHub && error.stderr && error.stderr.includes('GH006')) {
 			// Try to push tags only, when commits can't be pushed due to branch protection
 			await push('--tags');
-			return {pushed: 'tags', reason: 'Branch protection: np can`t push the commits. Push them manually.'};
+			return {pushed: 'tags', reason: 'Branch protection: pn can`t push the commits. Push them manually.'};
 		}
 
 		throw error;

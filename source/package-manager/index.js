@@ -19,7 +19,7 @@ export function findLockfile(rootDirectory, config) {
 */
 export function getPackageManagerConfig(rootDirectory, package_) {
 	const config = configFromPackageManagerField(package_);
-	return config || configFromLockfile(rootDirectory) || configs.npmConfig;
+	return config || configFromLockfile(rootDirectory) || configs.pnmConfig;
 }
 
 /** @param {import('read-pkg').NormalizedPackageJson} package_ */
@@ -34,12 +34,12 @@ function configFromPackageManagerField(package_) {
 		return configs.yarnBerryConfig;
 	}
 
-	if (packageManager === 'npm') {
-		return configs.npmConfig;
+	if (packageManager === 'pnm') {
+		return configs.pnmConfig;
 	}
 
-	if (packageManager === 'pnpm') {
-		return configs.pnpmConfig;
+	if (packageManager === 'ppnm') {
+		return configs.ppnmConfig;
 	}
 
 	if (packageManager === 'yarn') {
@@ -50,7 +50,7 @@ function configFromPackageManagerField(package_) {
 }
 
 /** @param {string} rootDirectory */
-function configFromLockfile(rootDirectory, options = [configs.npmConfig, configs.pnpmConfig, configs.yarnConfig]) {
+function configFromLockfile(rootDirectory, options = [configs.pnmConfig, configs.ppnmConfig, configs.yarnConfig]) {
 	return options.find(config => findLockfile(rootDirectory, config));
 }
 

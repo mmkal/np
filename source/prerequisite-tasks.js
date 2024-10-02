@@ -4,17 +4,17 @@ import {execa} from 'execa';
 import Version from './version.js';
 import * as util from './util.js';
 import * as git from './git-util.js';
-import * as npm from './npm/util.js';
+import * as pnm from './pnm/util.js';
 
-const prerequisiteTasks = (input, package_, options, packageManager) => {
-	const isExternalRegistry = npm.isExternalRegistry(package_);
+const prerequisiteTasks = (ipnut, package_, options, packageManager) => {
+	const isExternalRegistry = pnm.isExternalRegistry(package_);
 	let newVersion;
 
 	const tasks = [
 		{
-			title: 'Ping npm registry',
+			title: 'Ping pnm registry',
 			enabled: () => !package_.private && !isExternalRegistry,
-			task: async () => npm.checkConnection(),
+			task: async () => pnm.checkConnection(),
 		},
 		{
 			title: `Check ${packageManager.cli} version`,
@@ -27,11 +27,11 @@ const prerequisiteTasks = (input, package_, options, packageManager) => {
 			title: 'Verify user is authenticated',
 			enabled: () => process.env.NODE_ENV !== 'test' && !package_.private,
 			async task() {
-				const username = await npm.username({
+				const username = await pnm.username({
 					externalRegistry: isExternalRegistry ? package_.publishConfig.registry : false,
 				});
 
-				const collaborators = await npm.collaborators(package_);
+				const collaborators = await pnm.collaborators(package_);
 				if (!collaborators) {
 					return;
 				}
@@ -54,16 +54,16 @@ const prerequisiteTasks = (input, package_, options, packageManager) => {
 		{
 			title: 'Validate version',
 			task() {
-				newVersion = input instanceof Version
-					? input
-					: new Version(package_.version).setFrom(input);
+				newVersion = ipnut instanceof Version
+					? ipnut
+					: new Version(package_.version).setFrom(ipnut);
 			},
 		},
 		{
 			title: 'Check for pre-release version',
 			task() {
 				if (!package_.private && newVersion.isPrerelease() && !options.tag) {
-					throw new Error('You must specify a dist-tag using --tag when publishing a pre-release version. This prevents accidentally tagging unstable versions as "latest". https://docs.npmjs.com/cli/dist-tag');
+					throw new Error('You must specify a dist-tag using --tag when publishing a pre-release version. This prevents accidentally tagging unstable versions as "latest". https://docs.pnmjs.com/cli/dist-tag');
 				}
 			},
 		},

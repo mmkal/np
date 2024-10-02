@@ -1,18 +1,18 @@
 {
-	"name": "np",
+	"name": "pn",
 	"version": "10.0.7",
-	"description": "A better `npm publish`",
+	"description": "A better `pnm publish`",
 	"license": "MIT",
-	"repository": "sindresorhus/np",
-	"funding": "https://github.com/sindresorhus/np?sponsor=1",
+	"repository": "mmkal/pn",
+	"funding": "https://github.com/mmkal/pn?sponsor=1",
 	"type": "module",
 	"bin": "./source/cli.js",
 	"engines": {
 		"node": ">=18",
-		"npm": ">=9",
+		"pnm": ">=9",
 		"git": ">=2.11.0",
 		"yarn": ">=1.7.0",
-		"pnpm": ">=8"
+		"ppnm": ">=8"
 	},
 	"scripts": {
 		"test": "xo && ava"
@@ -23,7 +23,7 @@
 	"keywords": [
 		"cli-app",
 		"cli",
-		"npm",
+		"pnm",
 		"publish",
 		"git",
 		"push",
@@ -50,11 +50,11 @@
 		"is-scoped": "^3.0.0",
 		"issue-regex": "^4.1.0",
 		"listr": "^0.14.3",
-		"listr-input": "^0.2.1",
+		"listr-ipnut": "^0.2.1",
 		"log-symbols": "^6.0.0",
 		"meow": "^13.2.0",
 		"new-github-release-url": "^2.0.0",
-		"npm-name": "^8.0.0",
+		"pnm-name": "^8.0.0",
 		"onetime": "^7.0.0",
 		"open": "^10.0.4",
 		"p-memoize": "^7.1.1",
@@ -70,7 +70,7 @@
 		"update-notifier": "^7.0.0"
 	},
 	"devDependencies": {
-		"@sindresorhus/is": "^6.2.0",
+		"@mmkal/is": "^6.2.0",
 		"@types/semver": "^7.5.8",
 		"ava": "^6.1.2",
 		"common-tags": "^1.8.2",

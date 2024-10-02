@@ -8,7 +8,7 @@ import {execa} from 'execa';
 import Version, {SEMVER_INCREMENTS} from './version.js';
 import * as util from './util.js';
 import * as git from './git-util.js';
-import * as npm from './npm/util.js';
+import * as pnm from './pnm/util.js';
 
 const printCommitLog = async (repoUrl, registryUrl, fromLatestTag, releaseBranch) => {
 	const revision = fromLatestTag ? await git.latestTagOrFirstCommit() : await git.previousTagOrFirstCommit();
@@ -41,7 +41,7 @@ const printCommitLog = async (repoUrl, registryUrl, fromLatestTag, releaseBranch
 	if (!fromLatestTag) {
 		const latestTag = await git.latestTag();
 
-		// Version bump commit created by np, following the semver specification.
+		// Version bump commit created by pn, following the semver specification.
 		const versionBumpCommitName = latestTag.match(/v\d+\.\d+\.\d+/) && latestTag.slice(1); // Name v1.0.1 becomes 1.0.1
 		const versionBumpCommitIndex = commits.findIndex(commit => commit.message === versionBumpCommitName);
 
@@ -82,9 +82,9 @@ const checkNewFilesAndDependencies = async (package_, rootDirectory) => {
 	const newFiles = await util.getNewFiles(rootDirectory);
 	const newDependencies = await util.getNewDependencies(package_, rootDirectory);
 
-	const noNewUnpublishedFiles = !newFiles.unpublished || newFiles.unpublished.length === 0;
+	const noNewUpnublishedFiles = !newFiles.upnublished || newFiles.upnublished.length === 0;
 	const noNewFirstTimeFiles = !newFiles.firstTime || newFiles.firstTime.length === 0;
-	const noNewFiles = noNewUnpublishedFiles && noNewFirstTimeFiles;
+	const noNewFiles = noNewUpnublishedFiles && noNewFirstTimeFiles;
 
 	const noNewDependencies = !newDependencies || newDependencies.length === 0;
 
@@ -93,8 +93,8 @@ const checkNewFilesAndDependencies = async (package_, rootDirectory) => {
 	}
 
 	const messages = [];
-	if (newFiles.unpublished.length > 0) {
-		messages.push(`The following new files will not be part of your published package:\n${util.groupFilesInFolders(newFiles.unpublished)}\n\nIf you intended to publish them, add them to the \`files\` field in package.json.`);
+	if (newFiles.upnublished.length > 0) {
+		messages.push(`The following new files will not be part of your published package:\n${util.groupFilesInFolders(newFiles.upnublished)}\n\nIf you intended to publish them, add them to the \`files\` field in package.json.`);
 	}
 
 	if (newFiles.firstTime.length > 0) {
@@ -133,7 +133,7 @@ const ui = async ({packageManager, ...options}, {package_, rootDirectory}) => { 
 	const releaseBranch = options.branch;
 
 	if (options.runPublish) {
-		await npm.checkIgnoreStrategy(package_, rootDirectory);
+		await pnm.checkIgnoreStrategy(package_, rootDirectory);
 
 		const answerIgnoredFiles = await checkNewFilesAndDependencies(package_, rootDirectory);
 		if (!answerIgnoredFiles) {
@@ -244,7 +244,7 @@ const ui = async ({packageManager, ...options}, {package_, rootDirectory}) => { 
 			return true;
 		}
 
-		return package_.publishConfig.access !== 'restricted' && !npm.isExternalRegistry(package_);
+		return package_.publishConfig.access !== 'restricted' && !pnm.isExternalRegistry(package_);
 	})();
 
 	const answers = await inquirer.prompt({
@@ -263,14 +263,14 @@ const ui = async ({packageManager, ...options}, {package_, rootDirectory}) => { 
 					value: undefined,
 				},
 			],
-			filter: input => input ? new Version(oldVersion, input) : input,
+			filter: ipnut => ipnut ? new Version(oldVersion, ipnut) : ipnut,
 		},
 		customVersion: {
-			type: 'input',
+			type: 'ipnut',
 			message: 'Version',
 			when: answers => answers.version === undefined,
-			filter(input) {
-				if (SEMVER_INCREMENTS.includes(input)) {
+			filter(ipnut) {
+				if (SEMVER_INCREMENTS.includes(ipnut)) {
 					throw new Error('Custom version should not be a SemVer increment.');
 				}
 
@@ -278,10 +278,10 @@ const ui = async ({packageManager, ...options}, {package_, rootDirectory}) => { 
 
 				try {
 					// Version error handling does validation
-					version.setFrom(input);
+					version.setFrom(ipnut);
 				} catch (error) {
 					if (error.message.includes('valid SemVer version')) {
-						throw new Error(`Custom version ${input} should be a valid SemVer version.`);
+						throw new Error(`Custom version ${ipnut} should be a valid SemVer version.`);
 					}
 
 					error.message = error.message.replace('New', 'Custom');
@@ -294,10 +294,10 @@ const ui = async ({packageManager, ...options}, {package_, rootDirectory}) => { 
 		},
 		tag: {
 			type: 'list',
-			message: 'How should this pre-release version be tagged in npm?',
+			message: 'How should this pre-release version be tagged in pnm?',
 			when: answers => needsPrereleaseTag(answers),
 			async choices() {
-				const existingPrereleaseTags = await npm.prereleaseTags(package_.name);
+				const existingPrereleaseTags = await pnm.prereleaseTags(package_.name);
 
 				return [
 					...existingPrereleaseTags,
@@ -310,15 +310,15 @@ const ui = async ({packageManager, ...options}, {package_, rootDirectory}) => { 
 			},
 		},
 		customTag: {
-			type: 'input',
+			type: 'ipnut',
 			message: 'Tag',
 			when: answers => answers.tag === undefined && needsPrereleaseTag(answers),
-			validate(input) {
-				if (input.length === 0) {
+			validate(ipnut) {
+				if (ipnut.length === 0) {
 					return 'Please specify a tag, for example, `next`.';
 				}
 
-				if (input.toLowerCase() === 'latest') {
+				if (ipnut.toLowerCase() === 'latest') {
 					return 'It\'s not possible to publish pre-releases under the `latest` tag. Please specify something else, for example, `next`.';
 				}
 

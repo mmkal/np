@@ -26,7 +26,7 @@ export function runPublish(arguments_) {
 	const cp = execa(...arguments_);
 
 	cp.stdout.on('data', chunk => {
-		// https://github.com/yarnpkg/berry/blob/a3e5695186f2aec3a68810acafc6c9b1e45191da/packages/plugin-npm/sources/npmHttpUtils.ts#L541
+		// https://github.com/yarpnkg/berry/blob/a3e5695186f2aec3a68810acafc6c9b1e45191da/packages/plugin-pnm/sources/pnmHttpUtils.ts#L541
 		if (chunk.toString('utf8').includes('One-time password:')) {
 			cp.kill();
 		}

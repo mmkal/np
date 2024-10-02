@@ -10,7 +10,7 @@ import pMemoize from 'p-memoize';
 import chalk from 'chalk';
 import Version from './version.js';
 import * as git from './git-util.js';
-import * as npm from './npm/util.js';
+import * as pnm from './pnm/util.js';
 
 export const assert = (condition, message) => {
 	if (!condition) {
@@ -28,10 +28,10 @@ export const readPackage = async (packagePath = process.cwd()) => {
 	return {package_: packageResult.packageJson, rootDirectory: path.dirname(packageResult.path)};
 };
 
-const _npRootDirectory = fileURLToPath(new URL('..', import.meta.url));
+const _pnRootDirectory = fileURLToPath(new URL('..', import.meta.url));
 
-// Re-define `npRootDirectory` for trailing slash consistency.
-export const {package_: npPackage, rootDirectory: npRootDirectory} = await readPackage(_npRootDirectory);
+// Re-define `pnRootDirectory` for trailing slash consistency.
+export const {package_: pnPackage, rootDirectory: pnRootDirectory} = await readPackage(_pnRootDirectory);
 
 export const linkifyIssues = (url, message) => {
 	if (!(url && terminalLink.isSupported)) {
@@ -104,10 +104,10 @@ export const groupFilesInFolders = (files, groupingMinimumDepth = 1, groupingThr
 
 export const getNewFiles = async rootDirectory => {
 	const listNewFiles = await git.newFilesSinceLastRelease(rootDirectory);
-	const listPackageFiles = await npm.getFilesToBePacked(rootDirectory);
+	const listPackageFiles = await pnm.getFilesToBePacked(rootDirectory);
 
 	return {
-		unpublished: listNewFiles.filter(file => !listPackageFiles.includes(file) && !file.startsWith('.git')),
+		upnublished: listNewFiles.filter(file => !listPackageFiles.includes(file) && !file.startsWith('.git')),
 		firstTime: listNewFiles.filter(file => listPackageFiles.includes(file)),
 	};
 };
@@ -149,13 +149,13 @@ export const getPreReleasePrefix = pMemoize(async config => {
 });
 
 export const validateEngineVersionSatisfies = (engine, version) => {
-	const engineRange = npPackage.engines[engine];
+	const engineRange = pnPackage.engines[engine];
 	if (!new Version(version).satisfies(engineRange)) {
-		throw new Error(`\`np\` requires ${engine} ${engineRange}`);
+		throw new Error(`\`pn\` requires ${engine} ${engineRange}`);
 	}
 };
 
 export async function getNpmPackageAccess(name) {
-	const {stdout} = await execa('npm', ['access', 'get', 'status', name, '--json']);
+	const {stdout} = await execa('pnm', ['access', 'get', 'status', name, '--json']);
 	return JSON.parse(stdout)[name]; // Note: returns "private" for non-existent packages
 }

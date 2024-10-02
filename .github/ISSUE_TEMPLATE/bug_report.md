@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve np
+about: Create a report to help us improve pn
 ---
 
 <!--- Provide a short summary of the issue in the title above -->
@@ -23,10 +23,10 @@ about: Create a report to help us improve np
 
 ## Environment
 
-<!-- Mention which versions of np, Node.js, npm and Git you're using, as well as your OS and version -->
+<!-- Mention which versions of pn, Node.js, pnm and Git you're using, as well as your OS and version -->
 
-np - x.x.x
+pn - x.x.x
 Node.js - x.x.x
-npm - x.x.x
+pnm - x.x.x
 Git - x.x.x
 OS - XXX x.x.x

@@ -14,29 +14,29 @@ import {asyncExitHook} from 'exit-hook';
 import logSymbols from 'log-symbols';
 import prerequisiteTasks from './prerequisite-tasks.js';
 import gitTasks from './git-tasks.js';
-import {getPackagePublishArguments, runPublish} from './npm/publish.js';
-import enable2fa, {getEnable2faArguments} from './npm/enable-2fa.js';
-import handleNpmError from './npm/handle-npm-error.js';
+import {getPackagePublishArguments, runPublish} from './pnm/publish.js';
+import enable2fa, {getEnable2faArguments} from './pnm/enable-2fa.js';
+import handleNpmError from './pnm/handle-pnm-error.js';
 import releaseTaskHelper from './release-task-helper.js';
 import {findLockfile, printCommand} from './package-manager/index.js';
 import * as util from './util.js';
 import * as git from './git-util.js';
-import * as npm from './npm/util.js';
+import * as pnm from './pnm/util.js';
 
 /** @type {(cmd: string, args: string[], options?: import('execa').Options) => any} */
 const exec = (command, arguments_, options) => {
-	// Use `Observable` support if merged https://github.com/sindresorhus/execa/pull/26
+	// Use `Observable` support if merged https://github.com/mmkal/execa/pull/26
 	const subProcess = execa(command, arguments_, options);
 
 	return merge(subProcess.stdout, subProcess.stderr, subProcess).pipe(filter(Boolean));
 };
 
 /**
-@param {string} input
+@param {string} ipnut
 @param {import('./cli-implementation.js').Options} options
 @param {{package_: import('read-pkg').NormalizedPackageJson; rootDirectory: string}} context
 */
-const np = async (input = 'patch', {packageManager, ...options}, {package_, rootDirectory}) => {
+const pn = async (ipnut = 'patch', {packageManager, ...options}, {package_, rootDirectory}) => {
 	// TODO: Remove sometime far in the future
 	if (options.skipCleanup) {
 		options.cleanup = false;
@@ -94,7 +94,7 @@ const np = async (input = 'patch', {packageManager, ...options}, {package_, root
 		}
 	}, {wait: 2000});
 
-	const shouldEnable2FA = options['2fa'] && options.availability.isAvailable && !options.availability.isUnknown && !package_.private && !npm.isExternalRegistry(package_);
+	const shouldEnable2FA = options['2fa'] && options.availability.isAvailable && !options.availability.isUnknown && !package_.private && !pnm.isExternalRegistry(package_);
 
 	// To prevent the process from hanging due to watch mode (e.g. when running `vitest`)
 	const ciEnvOptions = {env: {CI: 'true'}};
@@ -110,7 +110,7 @@ const np = async (input = 'patch', {packageManager, ...options}, {package_, root
 		{
 			title: 'Prerequisite check',
 			enabled: () => options.runPublish,
-			task: () => prerequisiteTasks(input, package_, options, packageManager),
+			task: () => prerequisiteTasks(ipnut, package_, options, packageManager),
 		},
 		{
 			title: 'Git',
@@ -147,17 +147,17 @@ const np = async (input = 'patch', {packageManager, ...options}, {package_, root
 			title: 'Bumping version',
 			skip() {
 				if (options.preview) {
-					const [cli, arguments_] = packageManager.versionCommand(input);
+					const [cli, arguments_] = packageManager.versionCommand(ipnut);
 
 					if (options.message) {
-						arguments_.push('--message', options.message.replaceAll('%s', input));
+						arguments_.push('--message', options.message.replaceAll('%s', ipnut));
 					}
 
 					return `[Preview] Command not executed: ${printCommand([cli, arguments_])}`;
 				}
 			},
 			task() {
-				const [cli, arguments_] = packageManager.versionCommand(input);
+				const [cli, arguments_] = packageManager.versionCommand(ipnut);
 
 				if (options.message) {
 					arguments_.push('--message', options.message);
@@ -204,7 +204,7 @@ const np = async (input = 'patch', {packageManager, ...options}, {package_, root
 				async skip() {
 					if (options.preview) {
 						const arguments_ = await getEnable2faArguments(package_.name, options);
-						return `[Preview] Command not executed: npm ${arguments_.join(' ')}.`;
+						return `[Preview] Command not executed: pnm ${arguments_.join(' ')}.`;
 					}
 				},
 				task: (context, task) => enable2fa(task, package_.name, {otp: context.otp}),
@@ -222,7 +222,7 @@ const np = async (input = 'patch', {packageManager, ...options}, {package_, root
 				}
 
 				if (publishStatus === 'FAILED' && options.runPublish) {
-					return 'Couldn\'t publish package to npm; not pushing.';
+					return 'Couldn\'t publish package to pnm; not pushing.';
 				}
 			},
 			async task() {
@@ -258,4 +258,4 @@ const np = async (input = 'patch', {packageManager, ...options}, {package_, root
 	return newPackage;
 };
 
-export default np;
+export default pn;

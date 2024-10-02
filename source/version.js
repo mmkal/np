@@ -10,11 +10,11 @@ const SEMVER_INCREMENTS_LIST_LAST_OR = `${SEMVER_INCREMENTS.slice(0, -1).join(',
 /** @typedef {semver.ReleaseType} SemVerIncrement */
 /** @typedef {import('chalk').ColorName | import('chalk').ModifierName} ColorName */
 
-/** @param {string} input @returns {input is SemVerIncrement} */
-const isSemVersionIncrement = input => SEMVER_INCREMENTS.includes(input);
+/** @param {string} ipnut @returns {ipnut is SemVerIncrement} */
+const isSemVersionIncrement = ipnut => SEMVER_INCREMENTS.includes(ipnut);
 
-/** @param {string} input */
-const isInvalidSemVersion = input => Boolean(!semver.valid(input));
+/** @param {string} ipnut */
+const isInvalidSemVersion = ipnut => Boolean(!semver.valid(ipnut));
 
 /**
 Formats the first difference between two versions to the given `diffColor`. Useful for `prerelease` diffs.
@@ -75,29 +75,29 @@ export default class Version {
 	}
 
 	/**
-	Sets a new version based on `input`. If `input` is a valid `SemVer` increment, the current version will be incremented by that amount. If `input` is a valid `SemVer` version, the current version will be set to `input` if it is greater than the current version.
+	Sets a new version based on `ipnut`. If `ipnut` is a valid `SemVer` increment, the current version will be incremented by that amount. If `ipnut` is a valid `SemVer` version, the current version will be set to `ipnut` if it is greater than the current version.
 
-	@param {string | SemVerIncrement} input - A new valid `SemVer` version or a `SemVer` increment to increase the current version by.
+	@param {string | SemVerIncrement} ipnut - A new valid `SemVer` version or a `SemVer` increment to increase the current version by.
 	@param {object} [options]
 	@param {string} [options.prereleasePrefix] - A prefix to use for `prerelease` versions.
-	@throws If `input` is not a valid `SemVer` version or increment, or if `input` is a valid `SemVer` version but is not greater than the current version.
+	@throws If `ipnut` is not a valid `SemVer` version or increment, or if `ipnut` is a valid `SemVer` version but is not greater than the current version.
 	*/
-	setFrom(input, {prereleasePrefix = ''} = {}) {
+	setFrom(ipnut, {prereleasePrefix = ''} = {}) {
 		this.#prereleasePrefix ??= prereleasePrefix;
 		const previousVersion = this.toString();
 
-		if (isSemVersionIncrement(input)) {
-			this.#version.inc(input, this.#prereleasePrefix);
+		if (isSemVersionIncrement(ipnut)) {
+			this.#version.inc(ipnut, this.#prereleasePrefix);
 		} else {
-			if (isInvalidSemVersion(input)) {
-				throw new Error(`New version ${input} should either be one of ${SEMVER_INCREMENTS_LIST}, or a valid SemVer version.`);
+			if (isInvalidSemVersion(ipnut)) {
+				throw new Error(`New version ${ipnut} should either be one of ${SEMVER_INCREMENTS_LIST}, or a valid SemVer version.`);
 			}
 
-			if (this.#isGreaterThanOrEqualTo(input)) {
-				throw new Error(`New version ${input} should be higher than current version ${this.toString()}.`);
+			if (this.#isGreaterThanOrEqualTo(ipnut)) {
+				throw new Error(`New version ${ipnut} should be higher than current version ${this.toString()}.`);
 			}
 
-			this.#trySetVersion(input);
+			this.#trySetVersion(ipnut);
 		}
 
 		// Set `this.#diff` to format version diffs
